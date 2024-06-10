@@ -1,0 +1,46 @@
+{% extends "gambling/layout.html" %}
+
+{% block title %}{{ bet.name }}{% endblock %}
+
+{% block content %}
+<div>
+    <div class="container mt-4">
+
+        <h2>{{ bet.name }}</h2>
+        <p>{{ bet.description }}</p>
+        <p>Reserve: ${{ bet.reserve }}</p>
+        <p>Created at: {{ bet.created_at }}</p>
+        <p>Ending at: {{ bet.end_time }}</p>
+        <p>Tickets Sold: {{ bet.tickets_sold }}</p>
+    </div>
+    {% if bet.is_active %}
+        <div class="active-text">The Bet is still active. Place you bets here:</div>
+        {% for option in options %}
+            <div class="option-div">
+                <span>{{ option.name }}</span>
+                <span>{{ option.current_price }}</span>
+                <button class="btn btn-primary buy-option" data-bet-id="{{ bet.id }}" data-option-id="{{ option.id }}">Buy</button>
+            </div>
+        {% endfor %}
+    {% else %}
+    <div class="not-active-text">The Bet is no longer active</div>
+    {% endif %}
+</div>
+<div id="floating-section" class="floating-section hidden">
+    <h3>Place your bet</h3>
+    <form method="post" id="bet-form" >
+        {% csrf_token %}
+        <p>Option: <span id="selected-option-name"></span></p>
+        <p>Price per ticket: $<span id="selected-option-price"></span></p>
+        <label for="ticket-quantity">Quantity:</label>
+        <input type="number" id="ticket-quantity" name="ticket-quantity" min="1" value="1">
+        <input type="hidden" id="option-id-input" name="option-id" value="1">
+        <p>Total Price: $<span id="total-price"></span></p>
+        <input type="submit" id="confirm-bet" class="btn btn-success" value="Confirm Bet">
+        <button type="button" id="cancel-bet" class="btn btn-danger">Cancel</button>
+    </form>
+</div>
+{% load static %}
+<script src="{% static 'gambling/bet.js' %}"></script>
+
+{% endblock %}

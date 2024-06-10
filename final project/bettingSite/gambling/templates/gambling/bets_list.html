@@ -1,0 +1,23 @@
+{% extends "gambling/layout.html" %}
+
+{% block title %}Available Bets{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h2 class="mb-4">Available Bets</h2>
+        <div class="form-group">
+            <label for="sort_by">Sort by:</label>
+            <select id="sort_by" class="form-control">
+                <option value="created_at">Latest Created</option>
+                <option value="ending_at">Nearest Ending</option>
+                <option value="tickets_sold">Most Interest</option>
+            </select>
+        </div>
+        <div id="bets-container" class="row"></div>
+        <div id="loading" class="text-center mt-4" style="display: none;">
+            <img src="https://i.gifer.com/ZKZg.gif" alt="Loading..." class="small-img">
+        </div>
+    </div>
+    {% load static %}
+    <script src="{% static 'gambling/infinite_scroll.js' %}"></script>
+{% endblock %}

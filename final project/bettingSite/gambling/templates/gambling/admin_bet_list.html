@@ -1,0 +1,35 @@
+{% extends "gambling/layout.html" %}
+
+{% block title %}Admin Bet List{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h2 class="mb-4">Admin Bet List</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Created At</th>
+                    <th>Ending At</th>
+                    <th>Is Active</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for bet in bets %}
+                    <tr>
+                        <td>{{ bet.name }}</td>
+                        <td>{{ bet.description }}</td>
+                        <td>{{ bet.created_at }}</td>
+                        <td>{{ bet.end_time }}</td>
+                        <td>{{ bet.is_active }}</td>
+                        <td>
+                            <a href="{% url 'admin_bet_management' bet.id %}" class="btn btn-primary">Manage</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

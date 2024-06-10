@@ -1,0 +1,63 @@
+textarea {
+    min-height: 400px;
+}
+
+@keyframes appear {
+    0% {
+        transform: translateX(-50vw);
+        height: 0px;
+        padding: 0px;
+        margin: 0px;
+        border: 0px solid rgb(255, 106, 98);
+    }
+    20% {
+        transform: translateX(-50vw);
+        padding: 10px;
+        border: 2px solid rgb(255, 106, 98);
+        border-radius: 5px;
+        margin: 10px 0px;
+    }
+    100% {
+        transform: translateX(0px);
+        padding: 10px;
+        border: 2px solid rgb(255, 106, 98);
+        border-radius: 5px;
+        margin: 10px 0px;
+    }
+}
+
+.error-message {
+    display: none;
+    animation: forwards;
+    animation-name: appear;
+    animation-duration: 1s;
+    /* animation-play-state: paused; */
+    background-color: rgb(255, 182, 162);
+    padding: 10px;
+    width: fit-content;
+    border: 2px solid rgb(255, 106, 98);
+    border-radius: 5px;
+    color: rgb(179, 68, 48);
+    margin: 10px;
+}
+
+.email-div {
+    padding: 5px;
+    display: flex;
+    justify-content: space-between;
+    border: 2px solid rgb(0, 60, 255);
+    margin: 0px;
+}
+
+.unread {
+    background-color: rgb(199, 237, 255);
+}
+
+.email-sender {
+    font-weight: 800;
+}
+
+.email-time {
+    font-weight: 500;
+    color: gray;
+}

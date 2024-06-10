@@ -1,0 +1,33 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <h2>{{ title }}</h2>
+
+    {% for listing in listings%}
+        <a href="{% url 'listing' listing.id %}">
+            <div class="listing">
+                {% if listing.image_url != None %}
+                    <img src="{{ listing.image_url }}" alt="" class="listing-img">
+                {% endif %}
+                <div class="listing-left">
+                    <h3 class="listing-heading">{{ listing.title }}</h3>
+                    <p><strong>by {{ listing.owner }}</strong></p>
+                    <p>{{ listing.description }}</p>
+                    <p>Bids: {{ listing.bids.count }}</p>
+                    <p>Current Bid: ${{ listing.current_bid }}</p>
+                    <p>Category: {{ listing.category }}</p>
+                    {% if listing.end_date > current_time %}
+                    <p>Time Left: 
+                        {{ current_time|timesince:listing.end_date }}
+                    </p>
+                    {% else %}
+                        <p>Time Left: Ended</p>
+                    {% endif %}
+                </div>
+            </div>
+        </a>
+    {% empty%}
+        <p>There are no current listings</p>
+    {% endfor %}
+
+{% endblock %}

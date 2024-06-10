@@ -1,0 +1,43 @@
+{% extends "gambling/layout.html" %}
+
+{% block title %}Manage Bet{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h2 class="mb-4">Manage Bet: {{ bet.name }}</h2>
+        {% if bet.is_active %}
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="winning_option">Select Winning Option</label>
+                    <select id="winning_option" name="winning_option" class="form-control">
+                        {% for option in options %}
+                            <option value="{{ option.id }}">{{ option.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-success">Set Winner and Distribute Prizes</button>
+            </form>
+        {% else %}
+            <div class="alert alert-info" role="alert">
+                A winner has already been selected for this bet. The bet is no longer active.
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Option Name</th>
+                        <th>Tickets Sold</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for option in options %}
+                        <tr>
+                            <td>{{ option.name }}</td>
+                            <td>{{ option.tickets_sold }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+{% endblock %}

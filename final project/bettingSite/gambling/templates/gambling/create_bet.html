@@ -1,0 +1,71 @@
+{% extends "gambling/layout.html" %}
+
+{% block title %}Create Bet{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h2 class="mb-4">Create a New Bet</h2>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                {{ bet_form.as_p }}
+            </div>
+            <h3 class="mt-4">Bet Options</h3>
+            <div class="form-group" id="formset-container">
+                {{ formset.management_form }}
+                {% for form in formset %}
+                    <div class="formset-item">
+                        {{ form.as_p }}
+                        <button type="button" class="btn btn-danger remove-form">Remove</button>
+                        <hr>
+                    </div>
+                {% endfor %}
+            </div>
+            <button type="button" class="btn btn-primary" id="add-form">Add Option</button>
+            <br>
+            <button type="submit" class="btn btn-success mt-3">Create Bet</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let formsetContainer = document.getElementById('formset-container');
+            let addButton = document.getElementById('add-form');
+            let totalForms = document.getElementById('id_form-TOTAL_FORMS');
+
+            addButton.addEventListener('click', function () {
+                let currentFormCount = parseInt(totalForms.value);
+                let newForm = formsetContainer.querySelector('.formset-item').cloneNode(true);
+                let formRegex = RegExp(`form-(\\d){1}-`, 'g');
+                newForm.innerHTML = newForm.innerHTML.replace(formRegex, `form-${currentFormCount}-`);
+                formsetContainer.appendChild(newForm);
+                totalForms.value = currentFormCount + 1;
+
+                updateRemoveButtons();
+            });
+
+            function updateRemoveButtons() {
+                let removeButtons = formsetContainer.querySelectorAll('.remove-form');
+                removeButtons.forEach((button, index) => {
+                    button.addEventListener('click', function () {
+                        if (formsetContainer.querySelectorAll('.formset-item').length > 1) {
+                            button.closest('.formset-item').remove();
+                            updateFormIndices();
+                        }
+                    });
+                });
+            }
+
+            function updateFormIndices() {
+                let forms = formsetContainer.querySelectorAll('.formset-item');
+                forms.forEach((form, index) => {
+                    let formRegex = RegExp(`form-(\\d){1}-`, 'g');
+                    form.innerHTML = form.innerHTML.replace(formRegex, `form-${index}-`);
+                });
+                totalForms.value = forms.length;
+            }
+
+            updateRemoveButtons();
+        });
+    </script>
+{% endblock %}

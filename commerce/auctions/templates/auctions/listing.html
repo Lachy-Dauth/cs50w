@@ -1,0 +1,85 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+
+    {% if message %}
+        <div>{{ message }}</div>
+    {% endif %}
+
+    <h2>{{ listing.title }}</h2>
+    <p><strong>by {{ listing.owner }}</strong></p>
+
+    {% if not watching %}
+        <form action="{% url 'watchlist' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="comment" value="false">
+            <input type="hidden" name="remove" value="false">
+            <input type="hidden" name="listing_id" value="{{ listing.id }}">
+            <input class="btn btn-primary" type="submit" value="Add to Watchlist">
+        </form>
+    {% elif watching %}
+        <form action="{% url 'watchlist' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="comment" value="false">
+            <input type="hidden" name="remove" value="true">
+            <input type="hidden" name="listing_id" value="{{ listing.id }}">
+            <input class="btn btn-primary" type="submit" value="Remove from Watchlist">
+        </form>
+    {% endif %}
+
+    {% if listing.image_url %}
+        <img src="{{ listing.image_url }}" alt="" class="big-listing-img">
+    {% endif %}
+
+    <p>{{ listing.description }}</p>
+    <p>Category: {{ listing.category }}</p>
+    <p>Bids: {{ listing.bids.count }}</p>
+    <p class="large">
+        Current Bid: ${{ listing.current_bid }} 
+    </p>
+    <p>
+        {% if user_has_highest %}
+            Your bid is the highest.
+        {% endif %}
+    </p>
+
+    {% if listing.end_date > current_time %}
+        <form action="{% url 'listing' listing.id %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="comment" value="false">
+            <label for="price">Enter your bid:</label>
+            <input type="number" name="price" id="price" min="0" step="0.01">
+            <input class="btn btn-primary" type="submit" value="Submit Bid">
+        </form>
+        <br>
+        <p>Time Left: 
+            {{ current_time|timesince:listing.end_date }}
+        </p>
+    {% else %}
+        <p>Time Left: Ended</p>
+        <p class="large">
+            {% if user_has_highest %}
+                You have won the auction!
+            {% else %}
+                You have lost the auction.
+            {% endif %}
+        </p>
+    {% endif %}
+
+    <br>
+
+    {% for comment in comments %}
+        <p><strong>{{ comment.commenter }}</strong> commented: {{ comment.comment }}</p>
+    {% empty %}
+        <p>Be the first comment:</p>
+    {% endfor %}
+
+    <form action="{% url 'listing' listing.id %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="comment" value="true">
+        <textarea name="text" rows="4" cols="50" placeholder="Enter your comment here..."></textarea>
+        <br>
+        <input class="btn btn-primary" type="submit" value="Post">
+    </form>
+
+{% endblock %}

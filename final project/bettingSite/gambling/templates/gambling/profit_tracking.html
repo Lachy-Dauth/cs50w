@@ -1,0 +1,81 @@
+{% extends "gambling/layout.html" %}
+
+{% block title %}Profit Tracking{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Profit Over Time</h2>
+    <canvas id="profitGraph" width="800" height="400"></canvas>
+</div>
+
+<!-- Include Chart.js library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Include date adapter library for Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var ctx = document.getElementById('profitGraph').getContext('2d');
+        var profitData = {
+            labels: [
+                {% for record in records %}
+                    "{{ record.date|date:"Y-m-d H:i:s" }}",
+                {% endfor %}
+            ],
+            datasets: [{
+                label: 'Cumulative Profit',
+                data: [
+                    {% for record in records %}
+                        {{ record.cumulative_profit }},
+                    {% endfor %}
+                ],
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 2,
+                fill: false
+            },
+            {
+                label: 'Current Reserves',
+                data: [
+                    {% for record in records %}
+                        {{ record.current_reserves }},
+                    {% endfor %}
+                ],
+                borderColor: 'rgba(153, 102, 255, 1)',
+                borderWidth: 2,
+                fill: false
+            }]
+        };
+
+        var profitGraph = new Chart(ctx, {
+            type: 'line',
+            data: profitData,
+            options: {
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'day'
+                        },
+                        adapters: {
+                            date: {
+                                locale: 'en'
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Amount'
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
