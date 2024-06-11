@@ -15,7 +15,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 from .models import *
-from . import functions
+from .functions import *
 
 def register_view(request):
     if request.user.is_authenticated:
@@ -24,13 +24,13 @@ def register_view(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            user.balance = 50.00  # Set the balance to $50
+            user.balance = 1000.00  # Set the balance to $1000
             user.save()
             login(request, user)
             return redirect('dashboard')
     else:
         form = CustomUserCreationForm()
-    return render(request, 'gambling/register.html', {'form': form, 'initial_balance': 50.00})
+    return render(request, 'gambling/register.html', {'form': form, 'initial_balance': 1000.00})
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -50,14 +50,26 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
-@login_required()
+@login_required
 def dashboard_view(request):
-    return render(request, 'gambling/dashboard.html')
+    today = timezone.now().date()
+    got_bonus = False
+    if request.user.last_daily_bonus < today:
+        got_bonus = True
+        request.user.balance += 100
+        request.user.update_user_stats()
+        request.user.last_daily_bonus = today
+        request.user.save()
+    records = UserStat.objects.filter(user=request.user)
+    return render(request, 'gambling/dashboard.html', {
+        'got_bonus': got_bonus,
+        'tickets': Ticket.objects.filter(user=request.user, is_active=True),
+        'records': records,
+    })
 
 class BetsListView(View):
     def get(self, request):
         return render(request, 'gambling/bets_list.html')
-
 
 class BetDetailView(LoginRequiredMixin, View):
     def get(self, request, bet_id):
@@ -80,21 +92,9 @@ class BetDetailView(LoginRequiredMixin, View):
         if ticket_quantity < 1:
             return
         
-        total_cost = functions.get_successive_price(bet.reserve, bet.tickets_sold, option.tickets_sold, ticket_quantity)
-        if total_cost <= request.user.balance:
-            for i in range(ticket_quantity):
-                option.update_sold()
-                price = option.current_price
-                ticket = Ticket(
-                    user = request.user,
-                    option = option,
-                    price = price,
-                )
-                bet.reserve += decimal.Decimal(0.99) * decimal.Decimal(price)
-                ticket.save()
-                request.user.balance -= decimal.Decimal(price)
-            option.update_sold()
-            request.user.save()
+        bet.update_active()
+        if bet.is_active:
+            bet.handle_ticket_purchase(request.user, option, ticket_quantity)
         return HttpResponseRedirect(reverse('dashboard'))
 
 class BetsOptionApiView(View):
@@ -110,10 +110,25 @@ class BetsOptionApiView(View):
         option_tickets = option.tickets_sold
         
         return JsonResponse({
-            'reserve' : reserve,
-            'total_tickets' : total_tickets,
-            'option_tickets' : option_tickets,
-            'option_name' : option.name,
+            'reserve': reserve,
+            'total_tickets': total_tickets,
+            'option_tickets': option_tickets,
+            'option_name': option.name,
+        })
+
+class PriceApiView(View):
+    def get(self, request):
+        reserve = Decimal(request.GET.get('reserve', '0'))
+        total_tickets = int(request.GET.get('total_tickets', '0'))
+        option_tickets = int(request.GET.get('option_tickets', '0'))
+        number = int(request.GET.get('number', '0'))
+
+        price = get_price(reserve, total_tickets, option_tickets)
+        successive_price = get_successive_price(reserve, total_tickets, option_tickets, number)
+
+        return JsonResponse({
+            'price': float(price),
+            'successive_price': float(successive_price)
         })
 
 class BetsApiView(View):
@@ -153,6 +168,7 @@ class AdminBetManagementView(View):
 
     def post(self, request, bet_id):
         bet = Bet.objects.get(id=bet_id)
+        bet.update_active()
         if not bet.is_active:
             raise PermissionDenied("This bet is no longer active. A winner has already been selected.")
         
@@ -167,6 +183,8 @@ class AdminBetManagementView(View):
 class AdminBetListView(View):
     def get(self, request):
         bets = Bet.objects.all()
+        for bet in bets:
+            bet.update_active()
         return render(request, 'gambling/admin_bet_list.html', {'bets': bets})
     
 @method_decorator(admin_required, name='dispatch')

@@ -9,16 +9,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let data = {};
 
-    bet_btns.forEach(btn => (
-        btn.onclick = () => {
+    bet_btns.forEach(btn => {
+        btn.addEventListener('click', (event) => {
             floating_section.classList.remove('hidden');
             option_id_holder.value = event.target.dataset.optionId;
             fetch_info(event.target.dataset.betId, event.target.dataset.optionId);
-        }
-    ))
+        });
+    });
 
-    ticket_quantity.addEventListener('input', function() {
-        total_price.textContent = round(get_successive_price(parseInt(data.reserve), data.total_tickets, data.option_tickets, parseInt(ticket_quantity.value)))
+    ticket_quantity.addEventListener('input', async function() {
+        if (data.reserve !== undefined) {
+            const total = await get_successive_price(
+                parseInt(data.reserve),
+                data.total_tickets,
+                data.option_tickets,
+                parseInt(ticket_quantity.value)
+            );
+            total_price.textContent = total;
+        }
     });
 
     async function fetch_info(bet_id, option_id) {
@@ -26,23 +34,60 @@ document.addEventListener('DOMContentLoaded', () => {
         data = await response.json();
 
         selected_option_name.textContent = data.option_name;
-        selected_option_price.textContent = round(get_price(parseInt(data.reserve), data.total_tickets, data.option_tickets))
-        total_price.textContent = round(get_successive_price(parseInt(data.reserve), data.total_tickets, data.option_tickets, parseInt(ticket_quantity.value)))
+        selected_option_price.textContent = await get_price(
+            parseFloat(data.reserve),
+            data.total_tickets,
+            data.option_tickets
+        );
+        total_price.textContent = await get_successive_price(
+            parseFloat(data.reserve),
+            data.total_tickets,
+            data.option_tickets,
+            parseInt(ticket_quantity.value)
+        );
     };
-})
 
-function get_price(reserve, total_tickets, option_tickets) {
-    return Math.max(round(1 - 0.01 * (reserve - option_tickets)), 0)
-}
+    async function get_price(reserve, total_tickets, option_tickets) {
+        const url = new URL('/api/price/', window.location.origin);
+        const params = {
+            reserve: reserve,
+            total_tickets: total_tickets,
+            option_tickets: option_tickets,
+            number: 0
+        };
+        Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
 
-function get_successive_price(reserve, total_tickets, option_tickets, number){
-    if (number == 0) {
-        return 0
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            return data.price;
+        } catch (error) {
+            console.error('Error fetching price:', error);
+        }
     }
-    current_price = round(get_price(reserve, total_tickets, option_tickets))
-    return current_price + get_successive_price(reserve + 0.99*current_price, total_tickets + 1, option_tickets + 1, number - 1)
-}
 
-function round(num) {
-    return Math.ceil(num * 100) / 100
-}
+    async function get_successive_price(reserve, total_tickets, option_tickets, number) {
+        const url = new URL('/api/price/', window.location.origin);
+        const params = {
+            reserve: reserve,
+            total_tickets: total_tickets,
+            option_tickets: option_tickets,
+            number: number
+        };
+        Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            return data.successive_price;
+        } catch (error) {
+            console.error('Error fetching successive price:', error);
+        }
+    }
+});

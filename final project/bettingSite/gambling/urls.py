@@ -10,6 +10,7 @@ urlpatterns = [
     path('bets/<int:bet_id>/', BetDetailView.as_view(), name='bet_detail'),
     path('api/bets/', BetsApiView.as_view(), name='bets_api'),
     path('api/bet-option/', BetsOptionApiView.as_view(), name='options_api'),
+    path('api/price/', PriceApiView.as_view(), name='price_api'),
     path('gambling/admin/bets/', AdminBetListView.as_view(), name='admin_bet_list'),
     path('gambling/admin/bets/<int:bet_id>/', AdminBetManagementView.as_view(), name='admin_bet_management'),
     path('gambling/admin/create-bet/', CreateBetView.as_view(), name='create_bet'),

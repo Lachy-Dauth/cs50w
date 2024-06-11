@@ -7,6 +7,19 @@
     background-color: #f5f5f5;
 }
 
+.login-bonus-container {
+    display: flex;
+    justify-content: center;
+}
+
+.login-bonus {
+    padding: 10px;
+    background-color: rgb(237, 255, 237);
+    border: 2px solid green;
+    border-radius: 5px;
+    width: fit-content;
+}
+
 body {
     margin-bottom: 100px;
 }
@@ -78,4 +91,23 @@ span {
     width: 100%;
     padding: 10px;
     margin-top: 10px;
+}
+
+.ticket {
+    width: fit-content;
+    text-align: center;
+    padding: 3px;
+    border-radius: 2px;
+    border: 1px solid grey;
+}
+
+.ticket-container {
+    display: grid;
+    column-gap: 50px;
+    padding: 3px;
+    row-gap: 3px;
+    grid-template-columns: auto auto auto;
+    max-height: 400px;
+    overflow: scroll;
+    border: 1px solid grey;
 }

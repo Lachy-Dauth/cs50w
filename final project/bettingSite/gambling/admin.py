@@ -29,11 +29,5 @@ class TicketAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'option__name', 'option__bet__name')
     list_filter = ('option__bet', 'purchased_at')
 
-# Register the Transaction model
-@admin.register(Transaction)
-class TransactionAdmin(admin.ModelAdmin):
-    list_display = ('user', 'amount', 'transaction_type', 'created_at')
-    search_fields = ('user__username', 'transaction_type')
-    list_filter = ('transaction_type', 'created_at')
-
 admin.site.register(ProfitRecord)
+admin.site.register(UserStat)

@@ -13,7 +13,7 @@
         <p>Ending at: {{ bet.end_time }}</p>
         <p>Tickets Sold: {{ bet.tickets_sold }}</p>
     </div>
-    {% if bet.is_active %}
+    {% if bet.can_buy %}
         <div class="active-text">The Bet is still active. Place you bets here:</div>
         {% for option in options %}
             <div class="option-div">

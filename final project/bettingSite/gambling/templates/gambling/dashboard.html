@@ -1,8 +1,52 @@
 {% extends "gambling/layout.html" %}
 
+{% load static %}
+
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
     <h2 class="mb-4">Welcome, {{ user.username }}</h2>
+    {% if got_bonus %}
+    <div class="login-bonus-container"><div class="login-bonus">You Have Received a Login Bonus of $100</div></div>
+    {% endif %}
     <p>Balance: ${{ user.balance }}</p>
+    <div class="ticket-container">
+        {% for ticket in tickets %}
+        <div class="ticket">
+            Ticket for 
+            <strong>{{ ticket.option.bet.name }}</strong>
+            betting for 
+            <strong>{{ ticket.option.name }}</strong>
+            at 
+            <strong>{{ ticket.price }}</strong>
+            per ticket
+        </div>
+        {% empty %}
+        You have no tickets
+        {% endfor %}
+    </div>
+    <div class="container mt-4">
+        <h2 class="mb-4">Stats Over Time</h2>
+        <canvas id="profitGraph" width="800" height="400"></canvas>
+        <div id="profitData" data-labels='[
+            {% for record in records %}
+                "{{ record.timestamp|date:"Y-m-d H:i:s" }}"{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ]' data-cumulative-profit='[
+            {% for record in records %}
+                {{ record.profit }}{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ]' data-current-reserves='[
+            {% for record in records %}
+                {{ record.total_money }}{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ]'></div>
+    </div>
+    
+    <!-- Include Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Include date adapter library for Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <!-- Include the custom JavaScript file -->
+    <script src="{% static 'gambling/user-tracking.js' %}"></script>
 {% endblock %}
